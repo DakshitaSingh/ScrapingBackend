@@ -1,7 +1,7 @@
 # Use a Node.js base image that has apt and can install Chromium
 FROM node:20-slim
 
-# Install Chromium and its necessary system dependencies
+# Install Chromium and its necessary system dependencies that are proven to work
 RUN apt-get update && apt-get install -y \
     chromium \
     fontconfig \
@@ -37,8 +37,8 @@ COPY . .
 # Change to the subdirectory where your server.js is located
 WORKDIR /app/scrapping
 
-# Expose the port your Express app is listening on (using 10000 from your Dockerfile)
-EXPOSE 10000
+# Expose the port your Express app is listening on
+EXPOSE 3001
 
 # Command to run your application when the container starts
 CMD ["node", "server.js"]

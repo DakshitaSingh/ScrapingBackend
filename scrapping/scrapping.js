@@ -20,26 +20,23 @@ const initializeBrowser = async () => {
     return browserInstance;
 };
 
-const autoScroll = async (page) => {
-    console.log("Scrolling the page to load all products...");
-    await page.evaluate(async () => {
+// Using the simpler, bounded autoScroll function from your working project
+const autoScroll = async (page, maxScrolls = 5) => {
+    console.log("Scrolling the page...");
+    await page.evaluate(async (maxScrolls) => {
         await new Promise((resolve) => {
-            let previousHeight = -1;
-            let scrollAttempts = 0;
+            let scrolls = 0;
+            const distance = 100;
             const timer = setInterval(() => {
-                const scrollHeight = document.body.scrollHeight;
-                window.scrollBy(0, 200);
-                scrollAttempts++;
-                if (scrollHeight === previousHeight || scrollAttempts > 100) {
+                window.scrollBy(0, distance);
+                scrolls++;
+                if (scrolls >= maxScrolls || (window.innerHeight + window.scrollY) >= document.body.scrollHeight) {
                     clearInterval(timer);
                     resolve();
-                } else {
-                    previousHeight = scrollHeight;
                 }
-            }, 300);
+            }, 100);
         });
-    });
-    console.log("Finished intelligent scrolling.");
+    }, maxScrolls);
 };
 
 const parseMyntraProducts = ($, selector, config) => {
@@ -96,7 +93,6 @@ const scrapeMyntra = async (query, config) => {
             await page.goto(searchUrl, { waitUntil: 'networkidle2', timeout: config.navigationTimeout });
             await page.waitForSelector("li.product-base", { timeout: config.waitForSelectorTimeout });
             await autoScroll(page);
-            await page.waitForTimeout(2000);
             const content = await page.content();
             const $ = cheerio.load(content);
             return parseMyntraProducts($, "li.product-base", config);
