@@ -5,24 +5,7 @@ const fs = require('fs');
 
 puppeteer.use(StealthPlugin());
 
-async function findChrome() {
-    const possiblePaths = [
-        '/usr/bin/google-chrome',
-        '/usr/bin/chromium-browser',
-        '/usr/bin/google-chrome-stable',
-        'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-        'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
-    ];
-    for (const path of possiblePaths) {
-        if (fs.existsSync(path)) {
-            console.log(`✓ Found Chrome at: ${path}`);
-            return path;
-        }
-    }
-    const fallback = puppeteer.executablePath();
-    console.log(`ℹ Using Puppeteer's bundled Chromium: ${fallback}`);
-    return fallback;
-}
+async function findChrome() { /* ... your existing findChrome function ... */ }
 
 const launchBrowser = async () => {
     const executablePath = await findChrome();
@@ -33,7 +16,9 @@ const launchBrowser = async () => {
             '--no-sandbox',
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
-            '--disable-gpu'
+            '--disable-gpu',
+            '--window-size=1920,1080', // Set a common desktop resolution
+            '--lang=en-IN,en;q=0.9', // Set language to Indian English
         ]
     });
 };
