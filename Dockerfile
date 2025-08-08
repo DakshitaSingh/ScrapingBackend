@@ -1,27 +1,44 @@
-# Use a standard Node.js 18 image based on Debian Buster
-FROM node:18-buster
+# Use a Node.js base image that has apt and can install Chromium
+FROM node:20-slim
 
-# Set the working directory
-WORKDIR /usr/src/app
-
-# [FIX] Install necessary tools and add Google Chrome's official repository
-RUN apt-get update && apt-get install -y wget gnupg \
-    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
-
-# [FIX] Install the official stable version of Google Chrome and required fonts
-RUN apt-get update && apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1 --no-install-recommends \
+# Install Chromium and its necessary system dependencies
+RUN apt-get update && apt-get install -y \
+    chromium \
+    fontconfig \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libgbm1 \
+    libxkbcommon0 \
+    libatspi2.0-0 \
+    libgtk-3-0 \
+    libasound2 \
+    libnss3 \
+    libxss1 \
+    libxtst6 \
+    ca-certificates \
+    fonts-liberation \
+    --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy package files and install dependencies
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy package.json and package-lock.json first
 COPY package*.json ./
+
+# Install Node.js dependencies
 RUN npm install --omit=dev
 
 # Copy the rest of your application code
 COPY . .
 
-# Expose the port your app will run on
-EXPOSE 3001
+# Change to the subdirectory where your server.js is located
+WORKDIR /app/scrapping
 
-# Define the command to run your app
-CMD [ "npm", "start" ]
+# Expose the port your Express app is listening on (using 10000 from your Dockerfile)
+EXPOSE 10000
+
+# Command to run your application when the container starts
+CMD ["node", "server.js"]
